@@ -1,0 +1,285 @@
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font-sans); }
+  .tw-passage { display: none; }
+  .tw-passage.active { display: block; }
+  .tw-screen {
+    padding: 1.5rem 1rem;
+    min-height: 340px;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .tw-title {
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--color-text-primary);
+    border-left: 3px solid #1D9E75;
+    padding-left: 12px;
+    line-height: 1.3;
+  }
+  .tw-body {
+    font-size: 15px;
+    color: var(--color-text-secondary);
+    line-height: 1.75;
+    flex: 1;
+  }
+  .tw-body b { color: var(--color-text-primary); font-weight: 500; }
+  .tw-choices {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 0.5rem;
+  }
+  .tw-btn {
+    background: transparent;
+    border: 0.5px solid var(--color-border-secondary);
+    border-radius: var(--border-radius-md);
+    padding: 10px 14px;
+    font-size: 14px;
+    color: var(--color-text-primary);
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s, border-color 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .tw-btn:hover { background: var(--color-background-secondary); border-color: var(--color-border-primary); }
+  .tw-btn i { color: #1D9E75; font-size: 18px; flex-shrink: 0; }
+  .tw-badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 20px;
+    margin-bottom: 4px;
+    background: #E1F5EE;
+    color: #0F6E56;
+  }
+  .tw-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+    margin: 4px 0;
+  }
+  .tw-card {
+    background: var(--color-background-secondary);
+    border: 0.5px solid var(--color-border-tertiary);
+    border-radius: var(--border-radius-md);
+    padding: 12px;
+    font-size: 13px;
+    color: var(--color-text-secondary);
+  }
+  .tw-card strong { display: block; font-size: 14px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 4px; }
+  .tw-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0.75rem 1rem;
+    border-top: 0.5px solid var(--color-border-tertiary);
+    flex-wrap: wrap;
+  }
+  .tw-crumb {
+    font-size: 12px;
+    color: var(--color-text-tertiary);
+    flex: 1;
+  }
+  .tw-back {
+    background: transparent;
+    border: none;
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border-radius: var(--border-radius-md);
+  }
+  .tw-back:hover { background: var(--color-background-secondary); }
+  .tw-progress {
+    height: 3px;
+    background: var(--color-border-tertiary);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .tw-progress-bar {
+    height: 100%;
+    background: #1D9E75;
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+  .tw-tip {
+    background: #E1F5EE;
+    border-left: 3px solid #1D9E75;
+    border-radius: 0 var(--border-radius-md) var(--border-radius-md) 0;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: #085041;
+  }
+  .tw-warning {
+    background: #FAEEDA;
+    border-left: 3px solid #EF9F27;
+    border-radius: 0 var(--border-radius-md) var(--border-radius-md) 0;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: #633806;
+  }
+  @media (prefers-color-scheme: dark) {
+    .tw-badge { background: #085041; color: #9FE1CB; }
+    .tw-tip { background: #04342C; color: #5DCAA5; border-color: #1D9E75; }
+    .tw-warning { background: #412402; color: #FAC775; border-color: #EF9F27; }
+  }
+</style>
+
+<h2 class="sr-only">Material educativo interactivo sobre impresión 3D</h2>
+<div class="tw-progress"><div class="tw-progress-bar" id="prog" style="width:10%"></div></div>
+
+<div id="story"></div>
+
+<div class="tw-nav">
+  <span class="tw-crumb" id="crumb">Inicio</span>
+  <button class="tw-back" id="backBtn" onclick="goBack()" style="display:none"><i class="ti ti-arrow-left" aria-hidden="true"></i> Volver</button>
+</div>
+
+<script>
+const passages = {
+  start: {
+    title: "¿Qué es la impresión 3D?",
+    badge: "Introducción",
+    progress: 10,
+    body: `La impresión 3D (fabricación aditiva) es un proceso que crea objetos físicos a partir de un diseño digital, añadiendo material capa por capa. A diferencia del mecanizado tradicional que <b>resta</b> material, aquí se <b>añade</b> exactamente lo necesario.`,
+    extra: null,
+    tip: "Fue patentada por Chuck Hull en 1983 bajo el nombre de estereolitografía (SLA).",
+    choices: [
+      { label: "¿Cómo funciona el proceso?", icon: "ti-settings", target: "proceso" },
+      { label: "Tipos de impresoras 3D", icon: "ti-printer", target: "tipos" },
+      { label: "Materiales más usados", icon: "ti-cube", target: "materiales" },
+      { label: "Aplicaciones reales", icon: "ti-world", target: "aplicaciones" },
+    ]
+  },
+  proceso: {
+    title: "¿Cómo funciona paso a paso?",
+    badge: "Proceso",
+    progress: 35,
+    body: `El proceso tiene <b>tres etapas principales</b>:`,
+    cards: [
+      { icon: "ti-pencil", title: "1. Diseño", desc: "Se crea un modelo 3D con software CAD (Fusion 360, TinkerCAD) o se escanea un objeto real." },
+      { icon: "ti-adjustments", title: "2. Laminado", desc: "El archivo se convierte en capas finas usando un slicer (Cura, PrusaSlicer). Se definen velocidad, temperatura y relleno." },
+      { icon: "ti-tool", title: "3. Impresión", desc: "La impresora deposita material capa por capa siguiendo las instrucciones del archivo G-code generado." },
+    ],
+    tip: "El grosor de capa típico va de 0.1 mm a 0.3 mm. Capas más finas = más detalle, pero más tiempo de impresión.",
+    choices: [
+      { label: "Ver tipos de impresoras", icon: "ti-printer", target: "tipos" },
+      { label: "Volver al inicio", icon: "ti-home", target: "start" },
+    ]
+  },
+  tipos: {
+    title: "Tecnologías de impresión 3D",
+    badge: "Tipos",
+    progress: 50,
+    body: `Existen varias tecnologías. Las más comunes en educación y hogar son:`,
+    cards: [
+      { icon: "ti-flame", title: "FDM", desc: "Deposición de filamento fundido. La más económica y popular. Usa plástico (PLA, ABS, PETG)." },
+      { icon: "ti-droplet", title: "SLA/MSLA", desc: "Resina fotocurable con láser o UV. Muy alta resolución, ideal para figuras detalladas." },
+      { icon: "ti-grain", title: "SLS", desc: "Sinterización láser de polvo. Sin soportes, alta resistencia. Uso industrial." },
+    ],
+    warning: "Las impresoras de resina (SLA) requieren ventilación adecuada y guantes, ya que la resina sin curar es tóxica.",
+    choices: [
+      { label: "Materiales para FDM", icon: "ti-cube", target: "materiales" },
+      { label: "Aplicaciones reales", icon: "ti-world", target: "aplicaciones" },
+      { label: "Volver al inicio", icon: "ti-home", target: "start" },
+    ]
+  },
+  materiales: {
+    title: "Materiales para impresión 3D (FDM)",
+    badge: "Materiales",
+    progress: 65,
+    body: `El filamento es el "tinta" de las impresoras FDM. Cada material tiene propiedades distintas:`,
+    cards: [
+      { icon: "ti-leaf", title: "PLA", desc: "El más fácil de imprimir. Biodegradable, bajo olor. Ideal para principiantes y prototipos." },
+      { icon: "ti-shield", title: "ABS", desc: "Más resistente al calor y golpes. Requiere cama caliente y ventilación. Usado en piezas mecánicas." },
+      { icon: "ti-droplets", title: "PETG", desc: "Combina facilidad del PLA con resistencia del ABS. Buena flexibilidad y transparencia." },
+      { icon: "ti-rubber-stamp", title: "TPU", desc: "Flexible y elástico. Para fundas, suelas, piezas que absorben impacto." },
+    ],
+    tip: "Para empezar, usa PLA. Es el material más sencillo, económico y con el que se aprende mejor.",
+    choices: [
+      { label: "Aplicaciones reales", icon: "ti-world", target: "aplicaciones" },
+      { label: "Volver al inicio", icon: "ti-home", target: "start" },
+    ]
+  },
+  aplicaciones: {
+    title: "Aplicaciones en el mundo real",
+    badge: "Aplicaciones",
+    progress: 85,
+    body: `La impresión 3D ha transformado múltiples industrias:`,
+    cards: [
+      { icon: "ti-stethoscope", title: "Medicina", desc: "Prótesis personalizadas, modelos anatómicos para cirugías, implantes biocompatibles." },
+      { icon: "ti-building-factory", title: "Industria", desc: "Prototipos rápidos, herramientas, piezas de repuesto difíciles de conseguir." },
+      { icon: "ti-school", title: "Educación", desc: "Modelos científicos, piezas de robótica, proyectos STEAM en aulas." },
+      { icon: "ti-home", title: "Hogar", desc: "Piezas de reparación, decoración, accesorios personalizados." },
+    ],
+    tip: "En Colombia y Latinoamérica ya existen laboratorios Fab Lab y makerspaces con impresoras 3D abiertas al público.",
+    choices: [
+      { label: "Revisar desde el inicio", icon: "ti-refresh", target: "start" },
+      { label: "¿Qué sigue? Pregúntale a Claude ↗", icon: "ti-message", target: "ask" },
+    ]
+  }
+};
+
+const history = [];
+
+function render(id) {
+  const p = passages[id];
+  if (!p) {
+    sendPrompt("¿Qué más debo saber sobre impresión 3D para comenzar?");
+    return;
+  }
+  if (history[history.length-1] !== id) history.push(id);
+
+  document.getElementById('prog').style.width = p.progress + '%';
+  document.getElementById('crumb').textContent = p.badge || id;
+  document.getElementById('backBtn').style.display = history.length > 1 ? 'flex' : 'none';
+
+  let html = `<div class="tw-screen">`;
+  html += `<span class="tw-badge">${p.badge}</span>`;
+  html += `<div class="tw-title">${p.title}</div>`;
+  html += `<div class="tw-body">${p.body}</div>`;
+
+  if (p.cards) {
+    html += `<div class="tw-card-grid">`;
+    p.cards.forEach(c => {
+      html += `<div class="tw-card"><i class="ti ${c.icon}" aria-hidden="true" style="font-size:20px;color:#1D9E75;margin-bottom:6px;display:block"></i><strong>${c.title}</strong>${c.desc}</div>`;
+    });
+    html += `</div>`;
+  }
+
+  if (p.tip) html += `<div class="tw-tip"><i class="ti ti-bulb" aria-hidden="true" style="margin-right:6px"></i>${p.tip}</div>`;
+  if (p.warning) html += `<div class="tw-warning"><i class="ti ti-alert-triangle" aria-hidden="true" style="margin-right:6px"></i>${p.warning}</div>`;
+
+  html += `<div class="tw-choices">`;
+  p.choices.forEach(c => {
+    if (c.target === 'ask') {
+      html += `<button class="tw-btn" onclick="sendPrompt('¿Qué más debo saber sobre impresión 3D para empezar a imprimir?')"><i class="ti ${c.icon}" aria-hidden="true"></i>${c.label}</button>`;
+    } else {
+      html += `<button class="tw-btn" onclick="render('${c.target}')"><i class="ti ${c.icon}" aria-hidden="true"></i>${c.label}</button>`;
+    }
+  });
+  html += `</div></div>`;
+
+  document.getElementById('story').innerHTML = html;
+}
+
+function goBack() {
+  if (history.length > 1) {
+    history.pop();
+    const prev = history[history.length - 1];
+    history.pop();
+    render(prev);
+  }
+}
+
+render('start');
+</script>
